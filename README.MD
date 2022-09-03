@@ -3,7 +3,7 @@
 
 ### ER-диаграмма БД:
 
-![](https://github.com/AlexandrValter/test-inside/raw/master/Inside.png=true)
+![](https://github.com/AlexandrValter/test-inside/raw/master/Inside.png?raw=true)
 
 В проекте используется база данных PostgreSQL. Для тестов запускается embedded база данных H2.
 Таблицы создаются из файла schema.sql

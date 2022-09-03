@@ -1,0 +1,35 @@
+Изначально БД пустая, в ней нет пользователей и сообщений, поэтому в первую очередь нужно добавить нового пользователя, для этого нужно ввести команду:
+
+curl -vk -H "Content-Type:application/json" -H "accept:application/json" -d {"""name""":"""User1""","""password""":"""123"""} http://www.localhost:7070/user/add
+
+В результате выполнения этой команды в БД будет добавлен пользователь с именем User1 и паролем 123. 
+В ответ на этот запрос придёт json с токеном, что-то вроде такого:
+{"token":"eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidWVyN2R3IiwiaWF0IjoxNjYyMjE4NjAyLCJleHAiOjE2NjIyMjA0MDJ9.6q_bX8RMFTVHhE31CSUInkcXNGtXA6cv3MWM_FjrU-s"}
+
+Теперь можно добавить сообщение от этого пользователя, используя команду:
+
+curl -vk -H "Content-Type:application/json" -H "accept:application/json" -H "Authorization:Bearer_eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidWVyN2R3IiwiaWF0IjoxNjYyMjE4NjAyLCJleHAiOjE2NjIyMjA0MDJ9.6q_bX8RMFTVHhE31CSUInkcXNGtXA6cv3MWM_FjrU-s" -d {"""name""":"""User1""","""message""":"""lalala"""} http://www.localhost:7070/message
+
+Чтобы команда сработала корректно, важно чтобы в значении:
+"Authorization:Bearer_eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidWVyN2R3IiwiaWF0IjoxNjYyMjE4NjAyLCJleHAiOjE2NjIyMjA0MDJ9.6q_bX8RMFTVHhE31CSUInkcXNGtXA6cv3MWM_FjrU-s"
+после Bearer_ был вставлен полученный с пердыдущей командой токен, а также имя пользователя совпадало с тем, которое закодировано в токен (в данном случае User1)
+Если всё сделали правильно, то придет ответ со статусом 200.
+
+Если ввести еще 2 раза эту команду, меняя только message, то после этого в БД в таблице message будет 3 записи, примеры команд:
+
+curl -vk -H "Content-Type:application/json" -H "accept:application/json" -H "Authorization:Bearer_eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidWVyN2R3IiwiaWF0IjoxNjYyMjE4NjAyLCJleHAiOjE2NjIyMjA0MDJ9.6q_bX8RMFTVHhE31CSUInkcXNGtXA6cv3MWM_FjrU-s" -d {"""name""":"""User1""","""message""":"""nanana"""} http://www.localhost:7070/message
+
+curl -vk -H "Content-Type:application/json" -H "accept:application/json" -H "Authorization:Bearer_eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidWVyN2R3IiwiaWF0IjoxNjYyMjE4NjAyLCJleHAiOjE2NjIyMjA0MDJ9.6q_bX8RMFTVHhE31CSUInkcXNGtXA6cv3MWM_FjrU-s" -d {"""name""":"""User1""","""message""":"""test message"""} http://www.localhost:7070/message
+
+Чтобы запросить историю сообщений пользователя User1, вводим команду:
+curl -vk -H "Content-Type:application/json" -H "accept:application/json" -H "Authorization:Bearer_eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidWVyN2R3IiwiaWF0IjoxNjYyMjE4NjAyLCJleHAiOjE2NjIyMjA0MDJ9.6q_bX8RMFTVHhE31CSUInkcXNGtXA6cv3MWM_FjrU-s" -d {"""name""":"""User1""","""message""":"""history 2"""} http://www.localhost:7070/message
+
+Эта команда возвращает запрошенное количество последних сообщений в указанном количестве. В данном случае вернется 2 сообщения: "test message" и "nanana". 
+"lalala" не вернется, т.к. оно было первым из трёх, а запрошены 2 последних.
+
+Если у токена закончился срок действия, то нужно запросить новый, для этого ввести команду:
+
+curl -vk -H "Content-Type:application/json" -H "accept:application/json" -d {"""name""":"""User1""","""password""":"""123"""} http://www.localhost:7070/user/auth
+
+Для корректного выполнения команды нужно чтобы имя пользователя и пароль соответствовали добавленным ранее. 
+В случае успешного выполнения в ответ в json придёт новый токен.
